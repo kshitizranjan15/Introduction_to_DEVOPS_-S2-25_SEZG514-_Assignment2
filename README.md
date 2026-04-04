@@ -979,7 +979,7 @@ git push origin main
 Re-deploy quick commands (on VM):
 
 ```bash
-cd ~/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment1/deploy || cd ~/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment1
+cd ~Desktop/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment1/deploy || cd ~Desktop/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment1
 docker compose up -d --build
 # or fallback
 docker build -t aceest:local .
