@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  aceest:
+    build: ..
+    image: aceest:latest
+    container_name: aceest_app
+    restart: unless-stopped
+    ports:
+      - "80:5000" # Map host port 80 -> container 5000 (gunicorn)
+    environment:
+      - PYTHONUNBUFFERED=1
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
