@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: aceest-web
+    ports:
+      - "80:5000"     # host:container -> expose the app on host port 80 (container listens on 5000)
+    restart: always
+    environment:
+      - PYTHONUNBUFFERED=1
