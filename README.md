@@ -994,7 +994,7 @@ docker build -t aceest:local .
 docker run -d --name aceest -p 80:5000 aceest:local
 ```
 
-### Screenshot 18 — Deployment on VM via Docker
+### Deployment on VM via Docker
 
 This screenshot shows two useful verification panels captured on the VM:
 
