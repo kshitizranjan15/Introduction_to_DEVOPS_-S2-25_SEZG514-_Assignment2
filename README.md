@@ -1046,9 +1046,6 @@ git commit -m "docs: add VM deployment docker-status + app screenshot (18)"
 git push origin main
 ```
 
-Security reminder
-
-- Do not store plaintext credentials in the repository. The README previously contained a Jenkins password — remove it and rotate the password if it was used. Use Jenkins API tokens or Jenkins Credentials instead.
 
 ## Acknowledgements
 
