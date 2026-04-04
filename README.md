@@ -920,9 +920,7 @@ curl -s -u "$JENKINS_USER:$JENKINS_API_TOKEN" \
 
 ---
 
-## Acknowledgements
 
-This project was developed as part of **Assignment 1** for the course **Introduction to DevOps (CSIZG514 / SEZG514 / SEUSZG514)**, Second Semester 2025 (S2-25), under the **Work Integrated Learning Programme (WILP)** at **Birla Institute of Technology and Science, Pilani (BITS Pilani)**.
 
 ## Deployed on Virtual Lab
 
@@ -991,4 +989,8 @@ docker run -d --name aceest -p 80:5000 aceest:local
 Security reminder
 
 - Do not store plaintext credentials in the repository. The README previously contained a Jenkins password — remove it and rotate the password if it was used. Use Jenkins API tokens or Jenkins Credentials instead.
+
+## Acknowledgements
+
+This project was developed as part of **Assignment 1** for the course **Introduction to DevOps (CSIZG514 / SEZG514 / SEUSZG514)**, Second Semester 2025 (S2-25), under the **Work Integrated Learning Programme (WILP)** at **Birla Institute of Technology and Science, Pilani (BITS Pilani)**.
 
