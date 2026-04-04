@@ -53,7 +53,8 @@
 19. [Troubleshooting](#troubleshooting)
 20. [Future Improvements](#future-improvements-beyond-assignment-scope)
 21. [Appendix — Useful Commands](#appendix--useful-commands)
-22. [Acknowledgements](#acknowledgements)
+22. [Deployed on Virtual Lab](#deployed-on-virtual-lab)
+23. [Acknowledgements](#acknowledgements)
 
 ---
 
@@ -896,15 +897,22 @@ docker ps
 # Remove all stopped containers
 docker container prune -f
 
-# Trigger Jenkins build manually via API
-CRUMB=$(curl -s -u "kshitizranjan15:admin123" \
+# Trigger Jenkins build manually via API (use Jenkins username and API token)
+# Create a Jenkins API token for your user (Jenkins UI → People → <your user> → Configure → Show API Token).
+# Then export credentials as environment variables or use a credential manager. Example using env vars:
+#
+#   export JENKINS_USER="your-jenkins-username"
+#   export JENKINS_API_TOKEN="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+#
+# Obtain the CSRF crumb and trigger a build (uses HTTP basic auth with user:APITOKEN):
+CRUMB=$(curl -s -u "$JENKINS_USER:$JENKINS_API_TOKEN" \
   "http://localhost:8080/crumbIssuer/api/json" \
   | python3 -c "import sys,json;d=json.load(sys.stdin);print(d['crumb'])")
-curl -s -u "kshitizranjan15:admin123" -H "Jenkins-Crumb:$CRUMB" \
+curl -s -u "$JENKINS_USER:$JENKINS_API_TOKEN" -H "Jenkins-Crumb:$CRUMB" \
   -X POST "http://localhost:8080/job/aceest-fitness-gym/build"
 
-# Check last Jenkins build result
-curl -s -u "kshitizranjan15:admin123" \
+# Check last Jenkins build result (again using user:APITOKEN)
+curl -s -u "$JENKINS_USER:$JENKINS_API_TOKEN" \
   "http://localhost:8080/job/aceest-fitness-gym/lastBuild/api/json?tree=number,result,building" \
   | python3 -c "import sys,json; d=json.load(sys.stdin); \
     print('Build #'+str(d['number']), '| Result:', d['result'])"
@@ -915,3 +923,72 @@ curl -s -u "kshitizranjan15:admin123" \
 ## Acknowledgements
 
 This project was developed as part of **Assignment 1** for the course **Introduction to DevOps (CSIZG514 / SEZG514 / SEUSZG514)**, Second Semester 2025 (S2-25), under the **Work Integrated Learning Programme (WILP)** at **Birla Institute of Technology and Science, Pilani (BITS Pilani)**.
+
+## Deployed on Virtual Lab
+
+The application has been deployed to the course virtual lab instance provided by the instructor for hands-on evaluation.
+
+- Course / Lab: 25S2NSP3 - Intro to DevOps (Virtual Lab)
+- Machine / Instance ID: i-07de0a85b871448b5 (student VM)
+- Access portal: https://osha-bits.codeargo.net/booking/ (open the course → your lab session)
+- Time used / remaining (snapshot): 43m 26s used · 21h 16m remaining
+- Deployed service URL: https://osha-bits.codeargo.net/booking/ (open the lab and use the VM's browser or exposed port)
+
+Deployment screenshot
+
+![Deployed VM screenshot](images/17_vm_deployed_image.png)
+
+Deployment notes & reproduction
+
+1. Clone the repository on the VM (already done for this submission):
+
+```bash
+cd ~/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment1
+```
+
+2. If you have the image locally on your workstation (macOS) at:
+
+`/Users/kshitizranjan15/Library/Application Support/Code/User/workspaceStorage/vscode-chat-images/image-1775293114849.png`
+
+run this (on your Mac) to copy the screenshot into the repo, commit and push it to GitHub:
+
+```bash
+# ensure destination folder exists in repo
+mkdir -p ~/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment1/images
+cp "/Users/kshitizranjan15/Library/Application Support/Code/User/workspaceStorage/vscode-chat-images/image-1775293114849.png" \
+  ~/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment1/images/17_vm_deployed_image.png
+cd ~/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment1
+git add images/17_vm_deployed_image.png
+git commit -m "docs: add VM deployment screenshot"
+git push origin main
+```
+
+If you prefer to copy the file directly on the VM (for example via scp), use:
+
+```bash
+# from your Mac: replace <VM_USER> and <VM_HOST> with the VM details
+# copy the screenshot to the repo images folder (rename to 17_vm_deployed.png)
+# copy the screenshot to the repo images folder (rename to 17_vm_deployed_image.png)
+scp "/Users/kshitizranjan15/Library/Application Support/Code/User/workspaceStorage/vscode-chat-images/image-1775293114849.png" \
+  <VM_USER>@<VM_HOST>:~/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment1/images/17_vm_deployed_image.png
+# then on VM:
+cd ~/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment1
+git add images/17_vm_deployed_image.png
+git commit -m "docs: add VM deployment screenshot"
+git push origin main
+```
+
+Re-deploy quick commands (on VM):
+
+```bash
+cd ~/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment1/deploy || cd ~/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment1
+docker compose up -d --build
+# or fallback
+docker build -t aceest:local .
+docker run -d --name aceest -p 80:5000 aceest:local
+```
+
+Security reminder
+
+- Do not store plaintext credentials in the repository. The README previously contained a Jenkins password — remove it and rotate the password if it was used. Use Jenkins API tokens or Jenkins Credentials instead.
+
