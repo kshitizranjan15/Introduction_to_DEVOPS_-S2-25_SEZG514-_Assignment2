@@ -564,6 +564,8 @@ The **Register Member** form completed with a member's name, email, and selected
 │   ├── 14_calorie_calc.png              # Screenshot 14 — Live app calorie calculator result
 │   ├── 15_workout_log_adding.png        # Screenshot 15 — Live app workout log entry
 │   └── 16_register_member.png          # Screenshot 16 — Live app member registration
+│   ├── 17_vm_deployed_image.png        # Screenshot 17 — Deployed VM screenshot
+│   └── 18_Deployment_on_vm_via_docker.png # Screenshot 18 — Deployment on VM via Docker (docker ps + app)
 └── README.md                            # This report
 ```
 
@@ -898,11 +900,15 @@ docker ps
 docker container prune -f
 
 # Trigger Jenkins build manually via API (use Jenkins username and API token)
-# Create a Jenkins API token for your user (Jenkins UI → People → <your user> → Configure → Show API Token).
-# Then export credentials as environment variables or use a credential manager. Example using env vars:
+# Create a Jenkins API token for your user via the Jenkins UI:
+#  Jenkins → People → <your user> → Configure → Add/Show API Token
+#
+# For automation, export the credentials into environment variables (do NOT commit these values):
 #
 #   export JENKINS_USER="your-jenkins-username"
-#   export JENKINS_API_TOKEN="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+#   export JENKINS_API_TOKEN="<your-api-token-here>"
+#
+# Alternatively store them in your local OS keyring or CI secret store and inject at runtime.
 #
 # Obtain the CSRF crumb and trigger a build (uses HTTP basic auth with user:APITOKEN):
 CRUMB=$(curl -s -u "$JENKINS_USER:$JENKINS_API_TOKEN" \
@@ -978,12 +984,66 @@ git push origin main
 
 Re-deploy quick commands (on VM):
 
+Note: a `docker-compose.yml` is included at the repository root. It builds the image and maps host port 80 → container port 5000 so the app will be reachable on the VM's HTTP port without specifying a port in the browser.
+
 ```bash
-cd ~Desktop/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment1/deploy || cd ~Desktop/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment1
+cd ~/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment1/deploy || cd ~/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment1
 docker compose up -d --build
-# or fallback
+# or fallback (build & run directly)
 docker build -t aceest:local .
 docker run -d --name aceest -p 80:5000 aceest:local
+```
+
+### Screenshot 18 — Deployment on VM via Docker
+
+This screenshot shows two useful verification panels captured on the VM:
+
+- the Docker status (the output of `docker ps` / `docker compose ps`) showing the running `aceest-web` container, and
+- the live application served by the container in a browser (HTTP response / UI visible).
+
+![Deployment on VM via Docker — docker ps and app view](images/18_Deployment_on_vm_via_docker.png)
+
+Quick commands to reproduce the checks shown in the screenshot (run these on the VM):
+
+```bash
+# show running containers and confirm the web container is up
+docker ps --format "table {{.Names}}	{{.Image}}	{{.Status}}	{{.Ports}}"
+
+# if you used the compose file in repo root
+docker compose ps
+
+# show container logs (follow)
+docker logs -f aceest-web
+
+# quick HTTP check from the VM (should return HTML index)
+curl -sS http://localhost/ | head -n 5
+
+# test the API health endpoint
+curl -sS http://localhost/health
+```
+
+How to add the screenshot file into the repository (if it's on your Mac):
+
+```bash
+# from your Mac (adjust the source path if needed)
+mkdir -p ~/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment1/images
+cp "/path/to/18_Deployment_on_vm_via_docker.png" \
+  ~/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment1/images/18_Deployment_on_vm_via_docker.png
+cd ~/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment1
+git add images/18_Deployment_on_vm_via_docker.png
+git commit -m "docs: add VM deployment docker-status + app screenshot (18)"
+git push origin main
+```
+
+Or, scp the file to the VM and commit there (replace <VM_USER>@<VM_HOST>):
+
+```bash
+scp "/path/to/18_Deployment_on_vm_via_docker.png" <VM_USER>@<VM_HOST>:~/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment1/images/18_Deployment_on_vm_via_docker.png
+# then on the VM:
+cd ~/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment1
+git add images/18_Deployment_on_vm_via_docker.png
+git commit -m "docs: add VM deployment docker-status + app screenshot (18)"
+git push origin main
 ```
 
 Security reminder
