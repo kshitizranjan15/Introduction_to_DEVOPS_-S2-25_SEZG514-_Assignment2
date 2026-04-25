@@ -233,6 +233,20 @@ Reviewers will evaluate:
 
 ---
 
+## Screenshots & Evidence
+
+### Version Control: Git and GitHub
+
+![Version Control - Git and GitHub](images/19_Assignment_2_Version%20Control:%20Git%20and%20GitHub.png)
+*Figure: Git repository initialized and pushed to GitHub with version control strategy*
+
+### Build Automation: Jenkins
+
+![Jenkins Pipeline Overview](images/20_jenkins_pipeline_overview.png)
+*Figure: Jenkins pipeline dashboard showing the complete CI/CD workflow*
+
+---
+
 ## Running the Assignment 2 Services Locally
 
 ### 1. SonarQube (Static Analysis & Quality Gates)
