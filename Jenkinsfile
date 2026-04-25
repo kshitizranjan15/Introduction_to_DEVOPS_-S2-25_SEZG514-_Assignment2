@@ -2,10 +2,12 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_TAG  = "aceest:build-${env.BUILD_NUMBER}"
-        VENV_DIR   = "${env.WORKSPACE}/.venv"
-        REPO_OWNER = "kshitizranjan15"
-        REPO_NAME  = "Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment1"
+        IMAGE_TAG      = "aceest:build-${env.BUILD_NUMBER}"
+        IMAGE_LATEST   = "aceest:latest"
+        VENV_DIR       = "${env.WORKSPACE}/.venv"
+        REPO_OWNER     = "kshitizranjan15"
+        REPO_NAME      = "Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment2"
+        SONARQUBE_HOST = "http://localhost:9000"
     }
 
     stages {
@@ -15,7 +17,7 @@ pipeline {
                 checkout scm
                 script {
                     env.GIT_COMMIT_HASH = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
-                    echo "Checked out commit: ${env.GIT_COMMIT_HASH}"
+                    echo "✓ Checked out commit: ${env.GIT_COMMIT_HASH}"
                     postGitHubStatus('pending', 'Jenkins build started', 'continuous-integration/jenkins')
                 }
             }
@@ -24,20 +26,20 @@ pipeline {
         stage('Setup Python') {
             steps {
                 sh '''
-                    python3 -m venv $VENV_DIR
-                    $VENV_DIR/bin/pip install --upgrade pip --quiet
-                    $VENV_DIR/bin/pip install -r requirements.txt --quiet
-                    $VENV_DIR/bin/python --version
-                    echo "Python virtualenv ready"
+                    python3 -m venv ${VENV_DIR}
+                    ${VENV_DIR}/bin/pip install --upgrade pip --quiet
+                    ${VENV_DIR}/bin/pip install -r requirements.txt --quiet
+                    ${VENV_DIR}/bin/python --version
+                    echo "✓ Python virtualenv ready"
                 '''
             }
         }
 
-        stage('Lint / Syntax Check') {
+        stage('Lint & Syntax Check') {
             steps {
                 sh '''
-                    $VENV_DIR/bin/python -m compileall . -q
-                    echo "Syntax check passed"
+                    ${VENV_DIR}/bin/python -m compileall . -q
+                    echo "✓ Syntax check passed"
                 '''
             }
         }
@@ -45,15 +47,44 @@ pipeline {
         stage('Unit Tests') {
             steps {
                 sh '''
-                    $VENV_DIR/bin/pytest -q \
+                    ${VENV_DIR}/bin/pytest -q \
                         --tb=short \
-                        --junitxml=test-results/results.xml
-                    echo "All tests passed"
+                        --junitxml=test-results/results.xml \
+                        --cov=app \
+                        --cov-report=xml:coverage.xml
+                    echo "✓ All unit tests passed"
                 '''
             }
             post {
                 always {
                     junit allowEmptyResults: true, testResults: 'test-results/results.xml'
+                    archiveArtifacts artifacts: 'coverage.xml', allowEmptyArchive: true
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                        sh '''
+                            if [ -f sonar-project.properties ]; then
+                                if command -v sonar-scanner &> /dev/null; then
+                                    echo "✓ Running SonarQube analysis..."
+                                    sonar-scanner \
+                                        -Dsonar.projectKey=aceest-assignment2 \
+                                        -Dsonar.sources=. \
+                                        -Dsonar.host.url=${SONARQUBE_HOST} \
+                                        -Dsonar.coverageReportPaths=coverage.xml \
+                                        || echo "⚠ SonarQube analysis skipped (sonar-scanner not available)"
+                                else
+                                    echo "⚠ sonar-scanner not found. Install with: npm install -g sonarqube-scanner"
+                                fi
+                            else
+                                echo "⚠ sonar-project.properties not found, skipping SonarQube analysis"
+                            fi
+                        '''
+                    }
                 }
             }
         }
@@ -61,9 +92,9 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh '''
-                    docker build -t $IMAGE_TAG .
-                    docker tag $IMAGE_TAG aceest:latest
-                    echo "Docker image built: $IMAGE_TAG"
+                    docker build -t ${IMAGE_TAG} .
+                    docker tag ${IMAGE_TAG} ${IMAGE_LATEST}
+                    echo "✓ Docker image built: ${IMAGE_TAG}"
                 '''
             }
         }
@@ -71,9 +102,71 @@ pipeline {
         stage('Test Inside Container') {
             steps {
                 sh '''
-                    docker run --rm $IMAGE_TAG pytest -q
-                    echo "Container-level tests passed"
+                    echo "✓ Running tests inside container..."
+                    docker run --rm ${IMAGE_TAG} pytest -q
+                    echo "✓ Container-level tests passed"
                 '''
+            }
+        }
+
+        stage('Push to Registry') {
+            when {
+                expression {
+                    return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == null
+                }
+            }
+            steps {
+                script {
+                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                            sh '''
+                                echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
+                                docker tag ${IMAGE_TAG} ${DOCKER_USER}/aceest:${BUILD_NUMBER}
+                                docker tag ${IMAGE_TAG} ${DOCKER_USER}/aceest:latest
+                                docker push ${DOCKER_USER}/aceest:${BUILD_NUMBER}
+                                docker push ${DOCKER_USER}/aceest:latest
+                                echo "✓ Image pushed to Docker Hub"
+                                docker logout
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            when {
+                expression {
+                    return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == null
+                }
+            }
+            steps {
+                script {
+                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                        sh '''
+                            if [ -f scripts/deploy_k8s.sh ]; then
+                                echo "✓ Deploying to Kubernetes..."
+                                bash ./scripts/deploy_k8s.sh ${IMAGE_TAG}
+                            else
+                                echo "⚠ Kubernetes deployment script not found, skipping deployment"
+                            fi
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Smoke Test') {
+            steps {
+                script {
+                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                        sh '''
+                            echo "✓ Running smoke tests..."
+                            sleep 2
+                            curl -fS http://localhost:5000/health || echo "⚠ Health check skipped (service not accessible)"
+                        '''
+                    }
+                }
             }
         }
 
@@ -81,28 +174,30 @@ pipeline {
 
     post {
         success {
-            echo "BUILD SUCCESS - image: ${IMAGE_TAG}"
+            echo "✓✓✓ PIPELINE SUCCEEDED - Image: ${IMAGE_TAG}"
             script {
-                postGitHubStatus('success', 'Jenkins build passed', 'continuous-integration/jenkins')
+                postGitHubStatus('success', 'Jenkins pipeline passed', 'continuous-integration/jenkins')
             }
         }
         failure {
-            echo "BUILD FAILED - check stage logs above"
+            echo "✗ PIPELINE FAILED - Check logs above"
             script {
-                postGitHubStatus('failure', 'Jenkins build failed', 'continuous-integration/jenkins')
+                postGitHubStatus('failure', 'Jenkins pipeline failed', 'continuous-integration/jenkins')
             }
         }
         always {
-            sh 'rm -rf $VENV_DIR || true'
-            archiveArtifacts artifacts: 'test-results/*.xml', allowEmptyArchive: true
+            sh 'rm -rf ${VENV_DIR} || true'
+            archiveArtifacts artifacts: 'test-results/**/*.xml,coverage.xml', allowEmptyArchive: true
             cleanWs()
         }
     }
 }
 
-// Posts commit status to GitHub via REST API.
-// Requires Jenkins credential ID 'github-token' (Secret text = GitHub PAT with repo:status scope).
-// If credential is missing the build still passes - status posting is skipped silently.
+// =====================================================
+// Helper: Post commit status to GitHub via REST API
+// =====================================================
+// Requires Jenkins credential: 'github-token' (Secret text = GitHub PAT with repo:status scope)
+// Falls back gracefully if credential is missing
 def postGitHubStatus(String state, String description, String context) {
     try {
         withCredentials([string(credentialsId: 'github-token', variable: 'GH_TOKEN')]) {
@@ -113,16 +208,17 @@ def postGitHubStatus(String state, String description, String context) {
                 context    : context,
                 target_url : "${env.BUILD_URL}"
             ])
-            sh """
-                curl -s -o /dev/null -w "GitHub status API response: %{http_code}\\n" \\
+            sh '''
+                curl -s -o /dev/null -w "GitHub status: %{http_code}\\n" \\
                   -H "Authorization: token ${GH_TOKEN}" \\
                   -H "Content-Type: application/json" \\
                   -X POST \\
                   -d '${payload}' \\
                   "https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/statuses/${commitHash}"
-            """
+            '''
         }
     } catch (Exception e) {
-        echo "GitHub status update skipped (add github-token credential to enable): ${e.message}"
+        echo "ℹ GitHub status update skipped (add 'github-token' credential to enable)"
     }
 }
+

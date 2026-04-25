@@ -1,83 +1,357 @@
-# ACEest Fitness & Gym — DevOps Assignment 1
+# ACEest — Assignment 2: CI/CD, Quality Gates & Kubernetes Delivery
 
-**Course:** Introduction to DevOps (Merged — CSIZG514 / SEZG514 / SEUSZG514) · Second Semester 2025 (S2-25)  
-**Institution:** Birla Institute of Technology and Science, Pilani (BITS Pilani)  
-**Division:** Work Integrated Learning Programme (WILP)
+This repository contains the Assignment‑2 deliverables for the ACEest Fitness & Gym project. It focuses on implementing
+CI/CD best practices, static analysis (SonarQube), container registry integration, and validating deployment manifests on a
+Kubernetes cluster (Minikube / lab cluster). This README is a self-contained runbook for reviewers and graders.
 
-> 🔗 **GitHub Repository:** [kshitizranjan15/Introduction\_to\_DEVOPS\_-S2-25\_SEZG514-\_Assignment1](https://github.com/kshitizranjan15/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment1)
+## What this repository contains (quick)
 
----
+- `k8s/` — Kubernetes manifests (Deployment, Service) for demo deployment.
+- `scripts/` — helper scripts (e.g., `deploy_k8s.sh`).
+- `sonar-project.properties` — SonarQube project configuration.
+- `docker-compose.sonarqube.yml` — quick SonarQube demo stack.
+- `Makefile` — convenience targets (`sonar-up`, `build-image`, `minikube-start`, `deploy-k8s`, ...).
+- `sonar-scan.sh` — helper to run the Sonar scanner with host detection (optional).
+
+## Objective & Deliverables (Assignment requirements)
+
+Objective: demonstrate an automated, trustworthy CI/CD delivery pipeline that runs tests, performs static analysis,
+publishes a container image to a registry, and deploys to a Kubernetes cluster with simple rollout controls.
+
+Deliverables in this repo:
+- Automated CI workflow (GitHub Actions) that runs unit tests and Sonar scan.
+- A Jenkins pipeline (example `Jenkinsfile`) demonstrating local BUILD and deploy stages.
+- `sonar-project.properties` for Sonar analysis and `docker-compose.sonarqube.yml` to run Sonar locally.
+- Kubernetes manifests in `k8s/` and a helper `scripts/deploy_k8s.sh` for image patch and rollout.
+
+## Quick prerequisites
+
+- Git (to push this repo to GitHub)
+- Docker Desktop (or Colima) for local Docker daemon
+- Minikube and kubectl (for local k8s validation)
 
 ## Table of Contents
 
-1. [Student Details](#student-details)
-2. [Problem Statement](#problem-statement)
-3. [Objective](#objective)
-4. [Assignment Phases](#assignment-phases)
-   - [Phase 1 — Application Development & Modularization](#phase-1--application-development--modularization)
-   - [Phase 2 — Version Control System Strategy](#phase-2--version-control-system-vcs-strategy)
-   - [Phase 3 — Unit Testing & Validation Framework](#phase-3--unit-testing--validation-framework)
-   - [Phase 4 — Containerization with Docker](#phase-4--containerization-with-docker)
-   - [Phase 5 — Jenkins BUILD & Quality Gate](#phase-5--jenkins-build--quality-gate)
-   - [Phase 6 — Automated CI/CD Pipeline via GitHub Actions](#phase-6--automated-cicd-pipeline-via-github-actions)
-5. [Required Deliverables — Status](#required-deliverables--status)
-6. [CI/CD Pipeline — Live Evidence (Screenshots)](#cicd-pipeline--live-evidence-screenshots)
-   - [Screenshot 1 — First Push: CI Check In Progress](#screenshot-1--first-push-to-github-ci-check-in-progress)
-   - [Screenshot 2 — Second Commit Pushed](#screenshot-2--second-commit-pushed-unit-test-failure-detected)
-   - [Screenshot 3 — Unit Tests Pass, Docker Job Fails](#screenshot-3--github-actions-unit-tests-pass-docker-job-fails)
-   - [Screenshot 4 — Docker Job Passes](#screenshot-4--github-actions-docker-job-passes)
-   - [Screenshot 5 — GitHub Green Checkmark](#screenshot-5--github-green-checkmark-on-commit)
-   - [Screenshot 6 — Jenkins Configure Pipeline](#screenshot-6--jenkins-configure-pipeline-scm-from-github)
-   - [Screenshot 7 — Jenkins Stage View](#screenshot-7--jenkins-stage-view--all-builds-history)
-   - [Screenshot 8 — GitHub Final Green Commit](#screenshot-8--github-final-green-commit-all-ci-passing)
-   - [Screenshot 9 — GitHub Commit Line Final State](#screenshot-9--github-commit-line-final-state)
-   - [Screenshot 10 — Live App: Root View (Part 1 — Hero + Programs)](#screenshot-10--live-app-root-view-part-1--hero--programs)
-   - [Screenshot 11 — Live App: Root View (Part 2 — Program Detail)](#screenshot-11--live-app-root-view-part-2--program-detail-expanded)
-   - [Screenshot 12 — Live App: Root View (Part 3 — Workouts & Members)](#screenshot-12--live-app-root-view-part-3--workouts--members)
-   - [Screenshot 13 — Live App: Root View (Part 4 — Gym Info & Version Timeline)](#screenshot-13--live-app-root-view-part-4--gym-info--version-timeline)
-   - [Screenshot 14 — Live App: Calorie Calculator in Action](#screenshot-14--live-app-calorie-calculator-in-action)
-   - [Screenshot 15 — Live App: Logging a Workout](#screenshot-15--live-app-logging-a-workout)
-   - [Screenshot 16 — Live App: Registering a Member](#screenshot-16--live-app-registering-a-member)
-7. [Repository Structure](#repository-structure)
-8. [Local Setup — Developer Quickstart](#local-setup--developer-quickstart)
-9. [Running Tests](#running-tests)
-10. [API Quick Reference](#api-quick-reference)
-11. [Evaluation Criteria Mapping](#evaluation-criteria-mapping)
-12. [DevOps Concepts Applied — Learning Outcomes](#devops-concepts-applied--learning-outcomes)
-13. [Application Architecture — Deep Dive](#application-architecture--deep-dive)
-14. [CI/CD Pipeline — Full Flow Diagram](#cicd-pipeline--full-flow-diagram)
-15. [Key Files — Annotated](#key-files--annotated)
-16. [Technology Stack Summary](#technology-stack-summary)
-17. [Project Evolution — Version History](#project-evolution--version-history)
-18. [Security Considerations](#security-considerations)
-19. [Troubleshooting](#troubleshooting)
-20. [Future Improvements](#future-improvements-beyond-assignment-scope)
-21. [Appendix — Useful Commands](#appendix--useful-commands)
-22. [Deployed on Virtual Lab](#deployed-on-virtual-lab)
-23. [Acknowledgements](#acknowledgements)
+1. [Assignment Context & Background](#assignment-context--background)
+2. [Learning Objectives](#learning-objectives)
+3. [Assignment Deliverables](#assignment-deliverables--requirements)
+4. [Runbook — Quick Start](#runbook--quick-start-for-assignment-2)
+5. [Deployment Strategies](#deployment-strategies--how-to-demonstrate)
+6. [CI Integration & Testing](#ci-integration--testing--coverage)
+7. [Submission Checklist & Grading](#submission-checklist)
+8. [Running Services Locally](#running-the-assignment-2-services-locally)
+9. [Assignment 1 Reference & Evidence](#assignment-1-reference-and-foundational-evidence)
 
 ---
 
-## Student Details
+## Assignment Context & Background
 
-| Field            | Details                                                                         |
-|------------------|---------------------------------------------------------------------------------|
-| **Name**         | Kshitiz Ranjan                                                                  |
-| **Roll Number**  | 2024TM93505                                                                     |
-| **Subject**      | Introduction to DevOps                                                          |
-| **Subject Code** | CSIZG514 / SEZG514 / SEUSZG514                                                 |
-| **Semester**     | Second Semester 2025 (S2-25)                                                    |
-| **Division**     | Work Integrated Learning Programme (WILP)                                       |
-| **Institution**  | Birla Institute of Technology and Science, Pilani (BITS Pilani)                |
-| **Assignment**   | Assignment 1 — Implementing Automated CI/CD Pipelines for ACEest Fitness & Gym |
+**Course:** Introduction to DEVOPS (CSIZG514 / SEZG514) — Semester 2, 2025
+
+**Student:** Kshitiz Ranjan (Roll: 2024TM93505)  
+**Institution:** BITS Pilani, Work Integrated Learning Programme (WILP)
+
+### Assignment Rationale
+
+In modern software organizations, automation, testing, and continuous delivery are essential. This assignment builds a repeatable, test-driven CI/CD pipeline integrating code-quality checks, automated tests, container builds, image publishing, and Kubernetes deployments.
+
+**Baseline:** The application source from Assignment 1 serves as the functional baseline. Assignment 2 focuses on automation and DevOps practices, not application changes.
+
+**Reference — Assignment 1:**  
+https://github.com/kshitizranjan15/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment1
+
+### Learning Objectives
+By the end of this assignment you will be able to:
+1. Apply DevOps principles to design and implement a fully automated CI/CD pipeline.
+2. Demonstrate proficiency with: Git/GitHub, Jenkins, Pytest, SonarQube, Docker (or Podman), Docker Hub (or equivalent),
+   and Kubernetes (Minikube / cloud).
+3. Integrate automated testing and static analysis into the pipeline so quality gates are enforced.
+4. Implement deployment strategies that support zero‑downtime and safe rollback (rolling, blue/green, canary).
+5. Produce documentation and evidence (logs, screenshots, URLs) showing the pipeline, Sonar results and successful deploys.
+
+Expected learning outcomes
+--------------------------
+- Build an end‑to‑end automated DevOps pipeline that validates, packages and deploys the application.
+- Integrate tests and quality gates into automation.
+- Demonstrate rollback and progressive release strategies.
+- Learn how containerization and orchestration stabilize delivery across environments.
+
+### Assignment Deliverables & Requirements
+
+1) Application & Tests
+- Keep the ACEest application sources (from Assignment‑1). Include Pytest unit tests in `tests/` covering API and business logic.
+
+2) Version control & branching
+- Initialize Git and push to GitHub (Assignment‑2 repo). Use feature branches and meaningful commit messages. Tag releases.
+
+3) Unit testing & automation
+- Implement Pytest tests and integrate execution into CI. Produce `coverage.xml` using `pytest-cov`.
+
+4) Jenkins (BUILD server)
+- Provide a `Jenkinsfile` (Declarative) that:
+  - Checks out the repository
+  - Creates a Python venv and installs deps
+  - Runs unit tests and produces coverage
+  - Runs Sonar analysis (with token)
+  - Builds Docker image and (optionally) pushes to the registry
+  - Optionally deploys to k8s (guarded by branch or manual approval)
+
+5) Containerization & registry
+- Build a Docker image with a pinned `requirements.txt`. Tag images with semantic versions.
+- Push images to Docker Hub (or another registry) and document the image repo.
+
+6) Kubernetes deployment strategies
+- Provide `k8s/` manifests and demonstrate (or document) how to use:
+  - Rolling updates (default `kubectl` behavior)
+  - Blue/Green deployment (two services/deployments and traffic switch)
+  - Canary release (small subset of traffic to new version)
+  - Shadow / A/B testing concepts
+- Provide rollback scripts/commands (`kubectl rollout undo`) and smoke tests that detect failures and trigger rollback.
+
+7) SonarQube and quality gates
+- Add `sonar-project.properties`. Configure CI/Jenkins to run Sonar analysis and fail builds on quality gate failures.
+
+8) Documentation & report
+- A short report (2–3 pages) describing architecture, pipeline, deployment strategies, challenges and results.
+
+Runbook — quick practical steps
+------------------------------
+This section contains copy‑paste commands to get your demo environment running locally (sonar, minikube, build & deploy).
+
+Prerequisites
+- Git, Docker (or Colima), Python 3.11+, Minikube & kubectl, Jenkins (optional).
+
+Start SonarQube (local demo)
+```bash
+# start Sonar using the provided compose file (or use Makefile target)
+make sonar-up
+# or
+docker compose -f docker-compose.sonarqube.yml up -d
+```
+Open http://localhost:9000 and sign in using the local SonarQube administrator account. Change any default
+passwords immediately and create a scoped token for automated scans.
+
+For automation, generate a Sonar scanner token in the SonarQube UI and store it securely in your CI or pipeline
+credential store. For local scans you may authenticate interactively or provide the token to the scanner via an
+environment variable in your shell session — do not hardcode tokens in files or commit them to source control.
+
+Run Sonar scan
+
+For local Sonar scans, authenticate interactively in the Sonar UI or provide a scanner token in your shell session.
+For CI, inject the scanner token via your CI provider's secret store and reference it at runtime in the scanner step.
+Do not hardcode or commit tokens in any files or scripts.
+
+Minikube — build and deploy
+```bash
+minikube start --driver=docker
+eval "$(minikube -p minikube docker-env)"
+docker build -t aceest:local .
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+kubectl rollout status deployment/aceest-deployment
+minikube service aceest-service
+```
+
+Jenkins configuration
+
+Use Jenkins' Credentials store to securely add any authentication material required for pushes, scans or cluster
+access. Add registry credentials, Sonar scanner tokens, and kubeconfig or cluster-access material to Jenkins' secure
+credential store and reference those credentials from your pipeline at runtime. Avoid printing secret values in logs
+or committing them to the repository.
+
+GitHub Actions & secrets
+
+Configure required secrets in your chosen CI provider using the provider's secure secrets/credentials feature. Reference
+those secrets only at runtime in workflows or pipeline steps. Suggested job flow: tests → sonar → build & push (on
+`main`) → deploy (manual or protected `main`).
+
+sonar-project.properties (example)
+```
+sonar.projectKey=aceest-assignment2
+sonar.projectName=ACEest Assignment 2
+sonar.sources=.
+sonar.language=py
+sonar.python.version=3.11
+sonar.coverageReportPaths=coverage.xml
+```
+
+## Deployment Strategies — How to Demonstrate
+
+- **Rolling update:** Change image tag and use `kubectl rollout status` to show progressive pod replacement.
+- **Blue/Green:** Run parallel deployments (v1 and v2) and switch Service selector or update Ingress.
+- **Canary:** Deploy a small replica set of v2 and route a fraction of traffic (using ingress or manual test).
+- **Shadow/A‑B Testing:** Mirror requests to a secondary endpoint for validation without affecting user traffic.
+- **Rollback:** Demonstrate `kubectl rollout undo deployment/aceest-deployment` and automated health checks.
+
+## CI Integration — Testing & Coverage
+
+Generate test reports and code coverage for Sonar analysis:
+
+```bash
+pytest --junitxml=reports/junit.xml --cov=./ --cov-report=xml:coverage.xml -q
+```
+
+Pass the `coverage.xml` to the Sonar scanner so code coverage metrics appear in the SonarQube dashboard.
+
+## Submission Checklist
+
+Ensure your repository submission contains:
+
+**Code & Artifacts:**
+- Application source files (ACEest Flask app)
+- `tests/` with pytest test cases (minimum 5 tests)
+- `Dockerfile` and image build instructions
+- `Jenkinsfile` (Declarative pipeline)
+- `k8s/` manifests and `scripts/deploy_k8s.sh`
+- `sonar-project.properties` for quality analysis
+- `.github/workflows/` CI workflow(s) if implemented
+
+**Documentation & Evidence:**
+- GitHub repository URL (public or with reviewer access)
+- Docker Hub repository URL with tagged images
+- SonarQube project link or dashboard screenshots
+- Jenkins build logs or screenshots showing successful pipeline runs
+- Kubernetes/Minikube deployment screenshots demonstrating the chosen strategy
+
+**Report:**
+- 2–3 page summary covering:
+  - Pipeline architecture and component interactions
+  - Deployment strategies chosen and why
+  - Key challenges and solutions
+  - Test results and code quality metrics
+  - Evidence of successful CI/CD execution
+
+## Grading Criteria
+
+Reviewers will evaluate:
+
+- ✅ **Functional tests:** All unit tests pass; CI builds successfully
+- ✅ **Quality gates:** SonarQube configured and passing (or technical debt documented)
+- ✅ **Container images:** Versioned tags pushed to registry
+- ✅ **Deployment:** Strategies demonstrated and rollback tested
+- ✅ **Documentation:** Clear README and 2–3 page report
 
 ---
 
-## Problem Statement
+## Running the Assignment 2 Services Locally
 
-You have been appointed as a **Junior DevOps Engineer** for **ACEest Fitness & Gym**, a rapidly scaling startup. Your mission is to architect and implement a robust, automated deployment workflow that guarantees **code integrity**, **environmental consistency**, and **rapid delivery**.
+### 1. SonarQube (Static Analysis & Quality Gates)
 
-The solution must transition the application through a rigorous lifecycle — from local development to an automated Jenkins BUILD environment.
+Purpose: Static analysis and quality gate validation. A local SonarQube instance enables demonstration before integrating a hosted Sonar server.
+
+Quick start (requires Docker):
+
+
+```bash
+# Start SonarQube using the provided compose file
+make sonar-up
+# OR manually:
+docker compose -f docker-compose.sonarqube.yml up -d
+```
+
+Access SonarQube at http://localhost:9000 and sign in. Change any default account credentials immediately and create a scoped token for automated scans.
+
+For CI automation, store scanner tokens securely in your CI provider's secret store. Reference tokens at runtime only — never hardcode or commit them to source control.
+
+### 2. Minikube (Local Kubernetes Cluster)   - Quick start (macOS with Homebrew):
+
+   ```bash
+   # install and start minikube (one-time)
+   brew install minikube kubectl
+   minikube start --driver=docker
+
+   # use the host Docker daemon for faster image testing (optional)
+   eval "$(minikube -p minikube docker-env)"
+
+   # from the repo root: build the image using the same tag the deploy script expects
+   docker build -t aceest:local .
+
+   # update and apply manifests from the repo
+   kubectl apply -f k8s/deployment.yaml
+   kubectl apply -f k8s/service.yaml
+
+   # wait for rollout
+   kubectl rollout status deployment/aceest-deployment -n default
+   kubectl get svc aceest-service -o wide
+   ```
+
+   - Notes: if you prefer, `scripts/deploy_k8s.sh` can patch the Deployment image and wait for rollout. When using
+     Minikube you may expose the service with `minikube service aceest-service` or enable an ingress controller.
+
+3) Jenkins credentials & configuration
+
+Add any credentials required for registry pushes, Sonar scanning, or cluster access to Jenkins' secure credential store.
+Reference those credentials in your `Jenkinsfile` using the `credentials()` helper or the appropriate plugin. Keep
+secrets out of source control and avoid exposing them in build logs. For cluster deployments, either run `kubectl` on an
+agent that already has cluster credentials or provision a pod with the required access via a secure method supported
+by your infrastructure.
+
+### Jenkins Setup for Assignment 2
+
+Jenkins provides automated BUILD and deployment orchestration. This section documents the Jenkinsfile pipeline and how to run Jenkins locally.
+
+**What the Pipeline Does:**
+- Checkout code from GitHub
+- Setup Python environment with dependencies
+- Run linting and syntax checks
+- Execute pytest unit tests with coverage
+- Run SonarQube code quality analysis
+- Build Docker image with versioning
+- Test application inside container
+- Push image to Docker Hub (optional)
+- Deploy to Kubernetes cluster (optional)
+- Run smoke tests
+
+**Running Jenkins Locally:**
+
+```bash
+# Build custom Jenkins image
+docker build -f Dockerfile.jenkins -t aceest-jenkins:local .
+
+# Run Jenkins container
+docker run -d \
+  --name aceest-jenkins \
+  -p 8080:8080 \
+  -p 50000:50000 \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v jenkins_home:/var/jenkins_home \
+  aceest-jenkins:local
+```
+
+Access at http://localhost:8080. Retrieve initial admin password with:
+```bash
+docker exec aceest-jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+```
+
+**Jenkins Job Configuration:**
+1. Create a new Pipeline job named `aceest-assignment2`
+2. Configure "Pipeline script from SCM" (Git)
+3. Repository: `https://github.com/kshitizranjan15/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment2.git`
+4. Branch: `main`
+5. Script path: `Jenkinsfile`
+6. Enable GitHub hook trigger (if webhooks are configured)
+
+**Jenkinsfile Stages:**
+
+| Stage | Purpose |
+|-------|---------|
+| Checkout | Pull latest code from Git |
+| Setup Python | Create venv and install dependencies |
+| Lint & Syntax Check | Validate Python syntax |
+| Unit Tests | Run pytest and generate coverage |
+| SonarQube Analysis | Code quality scanning |
+| Build Docker Image | Create container image with version tag |
+| Test Inside Container | Run pytest inside built image |
+| Push to Registry | Push to Docker Hub (main branch only) |
+| Smoke Test | Validate health endpoint |
+
+**Required Credentials in Jenkins:**
+- `dockerhub-creds` — Docker Hub credentials (optional)
+- `github-token` — GitHub PAT (optional, for status updates)
+
+---
+
+## Files Added for Assignment 2
 
 ---
 
@@ -220,7 +494,7 @@ docker run -d \
 | **Checkout**              | `checkout scm` — pull latest commit from GitHub              |
 | **Setup Python**          | `python3 -m venv .venv`, `pip install -r requirements.txt`  |
 | **Lint / Syntax Check**   | `python -m compileall .`                                    |
-| **Unit Tests**            | `pytest -q --junitxml=test-results/results.xml`             |
+| **Unit Tests**            | `pytest -q`                                                 |
 | **Build Docker Image**    | `docker build -t aceest:build-N .`                          |
 | **Test Inside Container** | `docker run --rm aceest:build-N pytest -q`                  |
 
@@ -281,7 +555,11 @@ Push / Pull Request
 
 ---
 
-## CI/CD Pipeline — Live Evidence (Screenshots)
+## Assignment 1: Reference and Foundational Evidence
+
+The following section documents Assignment 1 (the baseline CI/CD work). This is provided for context and as a reference implementation showing how the Flask application was developed and initial CI/CD automation was established.
+
+### CI/CD Pipeline — Live Evidence (Screenshots — Assignment 1)
 
 The following screenshots document the complete end-to-end CI/CD journey — from the first push to GitHub, through GitHub Actions running in the cloud, to the Jenkins pipeline running locally in Docker. Each screenshot captures a distinct, significant milestone in the pipeline lifecycle.
 
@@ -351,8 +629,8 @@ After fixing the `.dockerignore` issue, the `docker-build-and-test` job now pass
 | Set up job                            | ✅     | 4s   |
 | Checkout                              | ✅     | 0s   |
 | Set up QEMU                           | ✅     | 5s   |
-| Set up Docker Buildx                  | ✅     | 5s   |
-| Build Docker image (for local runner) | ✅     | 12s  |
+| Set up Docker Buildx       | ✅     | 5s   |
+| Build Docker image                   | ✅     | 12s  |
 | Run tests inside container            | ✅     | 1s   |
 | Post Build Docker image               | ✅     | 0s   |
 
@@ -406,9 +684,9 @@ The Jenkins **Stage View** for the `aceest-fitness-gym` job showing **8 build ru
 |---------------------------|----------|---------------------------------------------------|
 | Declarative: Checkout SCM | 1s       | Jenkins internal SCM initialisation               |
 | Checkout                  | 958ms    | `checkout scm` — pull latest commit from GitHub   |
-| Setup Python              | 5s       | Create `.venv`, `pip install -r requirements.txt` |
+| Setup Python              | 5s       | `python3 -m venv .venv`, `pip install -r requirements.txt`  |
 | Lint / Syntax Check       | 295ms    | `python -m compileall .` — catch syntax errors    |
-| Unit Tests                | 344ms    | `pytest -q` — run all 5 tests                     |
+| Unit Tests                 | 344ms    | `pytest -q` — run all 5 tests                     |
 | Build Docker Image        | 7s       | `docker build -t aceest:build-N .`                |
 | Test Inside Container     | 451ms    | `docker run --rm aceest:build-N pytest -q`        |
 | Declarative: Post Actions | 342ms    | Workspace cleanup via `cleanWs()`                 |
@@ -432,11 +710,6 @@ Build #7 tooltip shows commit `657313e` ("S2-25_SEZG514:Docker update") — demo
 
 **What this shows:**
 The GitHub repository after **11 commits** with the latest commit `657313e` — *"S2-25_SEZG514:Docker update"* — showing a **green checkmark**. At this point, both GitHub Actions jobs and the Jenkins pipeline are all passing successfully.
-
-**What the green checkmark confirms at this final state:**
-1. ✅ GitHub Actions `build-and-test` — Python install + 5 pytest tests passed
-2. ✅ GitHub Actions `docker-build-and-test` — Docker image built + tests passed inside container
-3. ✅ Jenkins pipeline (local) — all 6 stages completed successfully
 
 **The full 11-commit journey:**
 
@@ -899,29 +1172,11 @@ docker ps
 # Remove all stopped containers
 docker container prune -f
 
-# Trigger Jenkins build manually via API (use Jenkins username and API token)
-# Create a Jenkins API token for your user via the Jenkins UI:
-#  Jenkins → People → <your user> → Configure → Add/Show API Token
+# Triggering Jenkins programmatically
 #
-# For automation, export the credentials into environment variables (do NOT commit these values):
-#
-#   export JENKINS_USER="your-jenkins-username"
-#   export JENKINS_API_TOKEN="<your-api-token-here>"
-#
-# Alternatively store them in your local OS keyring or CI secret store and inject at runtime.
-#
-# Obtain the CSRF crumb and trigger a build (uses HTTP basic auth with user:APITOKEN):
-CRUMB=$(curl -s -u "$JENKINS_USER:$JENKINS_API_TOKEN" \
-  "http://localhost:8080/crumbIssuer/api/json" \
-  | python3 -c "import sys,json;d=json.load(sys.stdin);print(d['crumb'])")
-curl -s -u "$JENKINS_USER:$JENKINS_API_TOKEN" -H "Jenkins-Crumb:$CRUMB" \
-  -X POST "http://localhost:8080/job/aceest-fitness-gym/build"
-
-# Check last Jenkins build result (again using user:APITOKEN)
-curl -s -u "$JENKINS_USER:$JENKINS_API_TOKEN" \
-  "http://localhost:8080/job/aceest-fitness-gym/lastBuild/api/json?tree=number,result,building" \
-  | python3 -c "import sys,json; d=json.load(sys.stdin); \
-    print('Build #'+str(d['number']), '| Result:', d['result'])"
+# For programmatic Jenkins triggers use a Jenkins user API token stored securely (local keyring, CI secret store, or
+# credentials manager). Follow the official Jenkins documentation for obtaining API tokens, CSRF crumbs, and the
+# recommended secure workflows for automation. Do not add tokens, usernames or other credentials to this repository.
 ```
 
 ---
@@ -972,7 +1227,6 @@ If you prefer to copy the file directly on the VM (for example via scp), use:
 ```bash
 # from your Mac: replace <VM_USER> and <VM_HOST> with the VM details
 # copy the screenshot to the repo images folder (rename to 17_vm_deployed.png)
-# copy the screenshot to the repo images folder (rename to 17_vm_deployed_image.png)
 scp "/Users/kshitizranjan15/Library/Application Support/Code/User/workspaceStorage/vscode-chat-images/image-1775293114849.png" \
   <VM_USER>@<VM_HOST>:~/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment1/images/17_vm_deployed_image.png
 # then on VM:
@@ -1046,8 +1300,52 @@ git commit -m "docs: add VM deployment docker-status + app screenshot (18)"
 git push origin main
 ```
 
+---
 
 ## Acknowledgements
 
-This project was developed as part of **Assignment 1** for the course **Introduction to DevOps (CSIZG514 / SEZG514 / SEUSZG514)**, Second Semester 2025 (S2-25), under the **Work Integrated Learning Programme (WILP)** at **Birla Institute of Technology and Science, Pilani (BITS Pilani)**.
+This assignment was completed as part of the **Introduction to DevOps** course (CSIZG514 / SEZG514 / SEUSZG514), Semester 2, 2025, at **BITS Pilani** under the Work Integrated Learning Programme (WILP).
+
+### Tools & Technologies
+
+- **Framework:** Flask 2.2.5 with Gunicorn
+- **Testing:** Pytest and pytest-cov
+- **CI/CD:** GitHub Actions and Jenkins (Declarative Pipeline)
+- **Static Analysis:** SonarQube (Community Edition)
+- **Containerization:** Docker with Buildx
+- **Orchestration:** Kubernetes (Minikube for local validation)
+- **Version Control:** Git and GitHub
+- **Infrastructure:** Linux containers, Docker Compose
+
+### References & Documentation
+
+- Flask Documentation: https://flask.palletsprojects.com/
+- Pytest Documentation: https://docs.pytest.org/
+- SonarQube Documentation: https://docs.sonarsource.com/sonarqube/
+- Kubernetes Documentation: https://kubernetes.io/docs/
+- Jenkins Documentation: https://www.jenkins.io/doc/
+- GitHub Actions: https://docs.github.com/en/actions
+- Docker Documentation: https://docs.docker.com/
+
+### Learning Resources
+
+This project demonstrates DevOps best practices including:
+- Continuous Integration & Continuous Deployment (CI/CD)
+- Infrastructure as Code (IaC)
+- Automated testing and quality gates
+- Container orchestration
+- Progressive deployment strategies
+
+### Gratitude
+
+Special thanks to:
+- The BITS Pilani faculty for course guidance and assignment design
+- The open-source community for providing robust tooling and documentation
+- GitHub, Jenkins, and SonarQube communities for excellent documentation and support
+
+---
+
+**Assignment Submission Date:** April 26, 2026  
+**Repository:** https://github.com/kshitizranjan15/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment2  
+**Student:** Kshitiz Ranjan (Roll: 2024TM93505)
 
