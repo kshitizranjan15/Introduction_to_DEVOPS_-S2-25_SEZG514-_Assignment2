@@ -245,6 +245,31 @@ Reviewers will evaluate:
 ![Jenkins Pipeline Overview](images/20_jenkins_pipeline_overview.png)
 *Figure: Jenkins pipeline dashboard showing the complete CI/CD workflow*
 
+![Jenkins Pipeline Stages](images/21_jenkins_pipeline_stages.png)
+*Figure: Jenkins pipeline stages view showing Checkout, Setup, Lint, Tests, Build, and Deploy stages*
+
+![Jenkins Build Success](images/22_jenkins_build_success.png)
+*Figure: Successful Jenkins build with all stages passing and green indicators*
+
+### Testing Framework: Pytest
+
+![Pytest Unit Tests Running](images/23_pytest_unit_tests_running.png)
+*Figure: Pytest executing unit tests with verbose output showing all test cases passing*
+
+![Pytest Coverage Report](images/24_pytest_coverage_report.png)
+*Figure: Code coverage report showing line coverage, branch coverage, and missing lines analysis*
+
+![Pytest All Tests Passed](images/25_pytest_all_tests_passed.png)
+*Figure: All 5 unit tests passing with 100% success rate and detailed assertions*
+
+### Code Quality: SonarQube
+
+![SonarQube Dashboard](images/26_sonarqube_dashboard.png)
+*Figure: SonarQube project dashboard showing code quality metrics and analysis results*
+
+![Creating SonarQube Project](images/26.5_Creating_SonarQube_Project.png)
+*Figure: SonarQube project creation form with project key and display name configuration*
+
 ---
 
 ## Running the Assignment 2 Services Locally
