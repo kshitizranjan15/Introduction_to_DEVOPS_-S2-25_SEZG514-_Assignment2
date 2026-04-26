@@ -1,0 +1,6 @@
+projectKey=aceest-assignment-2
+serverUrl=http://localhost:9000
+serverVersion=26.4.0.121862
+dashboardUrl=http://localhost:9000/dashboard?id=aceest-assignment-2
+ceTaskId=f9d66d6e-5626-46d0-a7e4-3a83353a434f
+ceTaskUrl=http://localhost:9000/api/ce/task?id=f9d66d6e-5626-46d0-a7e4-3a83353a434f

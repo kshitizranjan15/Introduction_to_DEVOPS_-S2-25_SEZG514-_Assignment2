@@ -16,8 +16,8 @@ spec:
     spec:
       containers:
         - name: aceest
-          image: kshitizranjan15/aceest:latest
-          imagePullPolicy: IfNotPresent
+          image: aceest:latest
+          imagePullPolicy: Never
           ports:
             - containerPort: 5000
           readinessProbe:

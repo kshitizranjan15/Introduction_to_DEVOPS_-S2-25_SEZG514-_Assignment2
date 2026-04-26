@@ -237,7 +237,7 @@ Reviewers will evaluate:
 
 ### Version Control: Git and GitHub
 
-![Version Control - Git and GitHub](images/19_Assignment_2_Version%20Control:%20Git%20and%20GitHub.png)
+![Version Control - Git and GitHub](images/19_Assignment_2_Version%20Control%3A%20Git%20and%20GitHub.png)
 *Figure: Git repository initialized and pushed to GitHub with version control strategy*
 
 ### Build Automation: Jenkins
@@ -269,6 +269,42 @@ Reviewers will evaluate:
 
 ![Creating SonarQube Project](images/26.5_Creating_SonarQube_Project.png)
 *Figure: SonarQube project creation form with project key and display name configuration*
+
+![SonarQube Code Quality Metrics](images/27_sonarqube_code_quality_metrics.png)
+*Figure: SonarQube code quality metrics dashboard showing project analysis results and quality gates*
+
+![SonarQube Issues Analysis](images/28_sonarqube_issues_analysis.png)
+*Figure: SonarQube issues and vulnerabilities analysis report with detailed findings*
+
+### Containerization: Docker
+
+![Docker Image Build](images/29_docker_image_build.png)
+*Figure: Docker image build process showing layer caching and successful image creation*
+
+![Docker Image List](images/30_docker_image_list.png)
+*Figure: Docker images listing showing built aceest image with size and creation metadata*
+
+![Docker Container Running](images/31_docker_container_running.png)
+*Figure: Docker container running with port mapping (5000:5000) and active status*
+
+### Container Registry: Docker Hub
+
+![Docker Hub Repository](images/32_dockerhub.png)
+*Figure: Docker Hub repository showing pushed images with tags and metadata*
+
+### Deployment and Orchestration: Minikube / Kubernetes
+
+![Minikube Status](images/33_minikube_status.png)
+*Figure: Minikube cluster running with Kubernetes active and cluster info*
+
+![Kubernetes Deployment](images/34_kubernetes_deployment.png)
+*Figure: Kubernetes deployment status showing aceest-deployment with ready replicas (2/2)*
+
+![Kubernetes Pods Running](images/35_kubernetes_pods_running.png)
+*Figure: Kubernetes pods running with active status and services configured*
+
+![Application Running Via Minikube Deployment](images/36_Application_Running%20Via_minikubedeplpyment.png)
+*Figure: Application successfully running and accessible via Minikube deployment*
 
 ---
 
