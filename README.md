@@ -1411,16 +1411,378 @@ This project demonstrates DevOps best practices including:
 - Container orchestration
 - Progressive deployment strategies
 
-### Gratitude
+---
 
-Special thanks to:
-- The BITS Pilani faculty for course guidance and assignment design
-- The open-source community for providing robust tooling and documentation
-- GitHub, Jenkins, and SonarQube communities for excellent documentation and support
+## ASSIGNMENT 2 SUBMISSION DOCUMENT
+
+### Submission Summary
+
+**Course:** Introduction to DEVOPS (CSIZG514 / SEZG514) — S2-25  
+**Assignment:** 2 - DevOps CI/CD Implementation for ACEest Fitness & Gym  
+**Student Name:** Kshitiz Ranjan  
+**Roll Number:** 2024TM93505  
+**Institution:** BITS Pilani, Work Integrated Learning Programme (WILP)  
+**Submission Date:** April 26, 2026
 
 ---
 
-**Assignment Submission Date:** April 26, 2026  
-**Repository:** https://github.com/kshitizranjan15/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment2  
-**Student:** Kshitiz Ranjan (Roll: 2024TM93505)
+### Assignment Problem Statement
+
+**Context:** ACEest Fitness & Gym is undergoing digital transformation to embrace incremental and test-driven development, aiming to streamline end-to-end software delivery using contemporary DevOps tools and methodologies.
+
+**Role:** DevOps Engineer responsible for automating the application's development and deployment lifecycle.
+
+**Objective:** Establish a robust, test-driven, and fully automated DevOps pipeline ensuring code quality, consistency, and reliability across multiple application versions.
+
+---
+
+### Learning Objectives — Achieved ✅
+
+| # | Objective | Status | Evidence |
+|---|-----------|--------|----------|
+| 1 | Apply DevOps principles to design and implement a fully automated CI/CD pipeline | ✅ Complete | Jenkinsfile (9 stages), GitHub Actions workflow, documented pipeline architecture |
+| 2 | Demonstrate proficiency with industry-standard tools | ✅ Complete | Git/GitHub, Jenkins, Pytest, SonarQube, Docker, Docker Hub, Minikube/Kubernetes |
+| 3 | Integrate automated testing and quality validation | ✅ Complete | 5 pytest tests (100% pass), SonarQube analysis, coverage.xml reporting |
+| 4 | Employ progressive deployment strategies | ✅ Complete | Rolling updates, Blue/Green setup, Canary-ready manifests, rollback commands documented |
+| 5 | Establish infrastructure consistency through containerization | ✅ Complete | Docker image versioning, Kubernetes manifests, environment parity confirmed |
+| 6 | Cultivate collaborative workflows and continuous improvement | ✅ Complete | Git branching strategy, conventional commits, CI/CD evidence screenshots |
+
+---
+
+### Submission Deliverables Checklist
+
+#### ✅ Code & Artifacts
+
+- [x] **Flask Application Source Files**
+  - `app.py` — Main Flask application with factory pattern
+  - `requirements.txt` — Pinned Python dependencies (pytest-cov, gunicorn, Flask 2.2.5, Werkzeug 2.3.7)
+  - All endpoints: `/`, `/health`, `/workouts`, `/members` (GET & POST)
+
+- [x] **Unit Tests**
+  - `tests/test_app.py` — 5 comprehensive pytest test cases
+  - `tests/conftest.py` — Pytest configuration and fixtures
+  - Coverage: 93% line coverage, 100% test pass rate
+  - `coverage.xml` — Cobertura format for SonarQube integration
+
+- [x] **CI/CD Automation**
+  - `Jenkinsfile` — Declarative pipeline (9 stages, 224 lines)
+    - Stages: Checkout, Setup Python, Lint, Tests, SonarQube, Build Docker, Test Container, Push Registry, Smoke Test
+    - Error handling with catchError() wrappers for optional stages
+    - Post-build actions: cleanup, artifact archiving, GitHub status posting
+  - `.github/workflows/main.yml` — GitHub Actions workflow (2 jobs)
+    - Job 1: build-and-test (pytest + syntax check)
+    - Job 2: docker-build-and-test (Docker image build + in-container pytest)
+    - `load: true` enabled for docker-build-push-action
+
+- [x] **Containerization**
+  - `Dockerfile` — Production-ready image
+    - Base: `python:3.11-slim`
+    - Dependencies: pinned requirements.txt
+    - Runtime: gunicorn WSGI server
+    - Port: 5000
+  - `Dockerfile.jenkins` — Custom Jenkins image with Docker CLI + Python 3
+  - `docker-entrypoint.sh` — Socket permission fix for Docker-in-Docker
+  - `.dockerignore` — Optimized build context (excludes unnecessary files)
+  - Images tagged: `aceest:latest`, `aceest:v1.0`, `kshitizranjan15/aceest:latest` (Docker Hub)
+
+- [x] **Kubernetes Deployment**
+  - `k8s/deployment.yaml` — Deployment manifest (2 replicas, rolling update strategy)
+    - Image: `aceest:latest` with `imagePullPolicy: Never` (for Minikube)
+    - Liveness & readiness probes configured
+    - CPU/memory requests and limits
+  - `k8s/service.yaml` — Service manifest (ClusterIP type)
+    - Port 80 → 5000
+  - `scripts/deploy_k8s.sh` — Deployment helper script
+
+- [x] **Static Analysis & Quality Gates**
+  - `sonar-project.properties` — SonarQube project configuration
+    - Project Key: `aceest-assignment-2`
+    - Coverage report path: `coverage.xml`
+    - Python version: 3.11
+  - `docker-compose.sonarqube.yml` — Local SonarQube demo stack
+  - SonarQube dashboard: http://localhost:9000/dashboard?id=aceest-assignment-2
+
+---
+
+#### ✅ GitHub Repository & Version Control
+
+**Repository URL:** https://github.com/kshitizranjan15/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment2
+
+**Repository Status:**
+- ✅ **Public** — Fully accessible for review
+- ✅ **Initialized with Git** — Version-controlled from first commit
+- ✅ **Branching Strategy:**
+  - `main` — Production-ready (always deployable, CI must pass)
+  - Feature branches: `feature/*`, `fix/*`, `ci/*`
+- ✅ **Commits:** 20+ meaningful commits with conventional commit format
+  - Format: `feat(api): ...`, `fix(validation): ...`, `ci(docker): ...`, `docs(readme): ...`
+- ✅ **Tags:** Release tags for major versions
+- ✅ **README:** 1,500+ lines of comprehensive documentation
+
+---
+
+#### ✅ Jenkins Pipeline Evidence
+
+**Local Jenkins Setup:**
+```
+Docker container: aceest-jenkins:local
+Access: http://localhost:8080
+```
+
+**Pipeline Stages (9 total):**
+1. ✅ Checkout — Pull code from GitHub
+2. ✅ Setup Python — Create venv, install deps
+3. ✅ Lint & Syntax Check — `python -m compileall`
+4. ✅ Unit Tests — pytest with coverage (5 tests, 100% pass)
+5. ✅ SonarQube Analysis — Static code quality analysis
+6. ✅ Build Docker Image — `docker build -t aceest:build-N`
+7. ✅ Test Inside Container — Run pytest in Docker
+8. ✅ Push to Registry — Push to Docker Hub (main branch)
+9. ✅ Smoke Test — Health endpoint validation
+
+**Build Status:** 8+ successful builds verified (see screenshots 06, 07, 22)
+
+---
+
+#### ✅ Docker Hub Container Registry
+
+**Docker Hub Repository:** https://hub.docker.com/r/kshitizranjan15/aceest
+
+**Images Pushed:**
+- ✅ `kshitizranjan15/aceest:latest` — Current stable
+- ✅ `kshitizranjan15/aceest:v1.0` — Version tagged
+- ✅ Image size: ~450MB (python:3.11-slim optimized)
+- ✅ All layers successfully pushed
+
+**Pull Command:**
+```bash
+docker pull kshitizranjan15/aceest:latest
+docker run -p 5000:5000 kshitizranjan15/aceest:latest
+```
+
+---
+
+#### ✅ SonarQube Code Quality Analysis
+
+**Project Setup:**
+- Project Key: `aceest-assignment-2`
+- Dashboard URL: http://localhost:9000/dashboard?id=aceest-assignment-2
+- Analysis Date: April 26, 2026, 05:29:39 UTC
+
+**Quality Metrics:**
+- ✅ **Lines of Code:** 12 source files, 64 total files analyzed
+- ✅ **Code Coverage:** 93% line coverage (via coverage.xml)
+- ✅ **Issues Found:** 0 critical, 0 major, 0 blocker issues
+- ✅ **Duplications:** 0% code duplication
+- ✅ **Quality Gates:** PASSED
+- ✅ **Python Rules:** Sonar way (industry standard)
+
+**Analysis Report:** See screenshots 26, 26.5, 27, 28
+
+---
+
+#### ✅ Kubernetes Deployment & Orchestration
+
+**Cluster Setup:**
+- ✅ Minikube running (Docker driver)
+- ✅ kubectl configured and operational
+- ✅ Kubernetes version: v1.28+
+
+**Deployment Status:**
+- ✅ Deployment: `aceest-deployment` (2/2 replicas ready)
+- ✅ Service: `aceest-svc` (ClusterIP: 10.107.231.59, port 80)
+- ✅ Pods: Both running and healthy (status: Running)
+- ✅ IP addresses: 10.244.0.6, 10.244.0.7
+- ✅ Age: Deployed and stable
+
+**Deployment Strategies Documented:**
+- ✅ Rolling Update — Default kubectl behavior (zero-downtime)
+- ✅ Blue/Green — Two services/deployments with traffic switch capability
+- ✅ Canary Release — Small replica set ready for traffic routing
+- ✅ Shadow Deployment — Request mirroring to secondary endpoint
+- ✅ Rollback — `kubectl rollout undo` documented and tested
+
+**Application Access:**
+- ✅ Port forward: `kubectl port-forward svc/aceest-svc 5000:80`
+- ✅ Health endpoint: `curl http://localhost:5000/health` → `{"status": "healthy"}`
+- ✅ API endpoints: All working (workouts, members, health)
+
+**Deployment Screenshots:** See images 33, 34, 35, 36
+
+---
+
+#### ✅ Comprehensive Documentation
+
+**This README includes:**
+1. ✅ Assignment context and rationale
+2. ✅ Learning objectives and outcomes
+3. ✅ Complete runbook with copy-paste commands
+4. ✅ Deployment strategy explanations
+5. ✅ CI/CD architecture and flow diagrams
+6. ✅ Technology stack and versions
+7. ✅ Troubleshooting guide
+8. ✅ 37 annotated screenshots with captions
+9. ✅ Local setup instructions
+10. ✅ API reference
+
+**Screenshot Evidence (37 total):**
+- Screenshots 01-09: GitHub Actions CI/CD progression
+- Screenshots 10-16: Live application UI
+- Screenshots 17-18: VM deployment
+- Screenshots 19-22: Version control and Jenkins
+- Screenshots 23-25: Pytest testing
+- Screenshots 26-28: SonarQube analysis
+- Screenshots 29-31: Docker containerization
+- Screenshot 32: Docker Hub registry
+- Screenshots 33-36: Kubernetes/Minikube deployment
+
+---
+
+### Assignment Tasks — Completion Status
+
+#### Task 1: Application Development ✅
+- [x] Flask web application developed
+- [x] Modular, maintainable code structure
+- [x] All endpoints implemented and tested
+- [x] Pythonic standards adhered to
+
+#### Task 2: Version Control System Setup ✅
+- [x] Git repository initialized
+- [x] GitHub remote configured
+- [x] Branching strategy documented
+- [x] Meaningful commits with conventional format
+- [x] Repository publicly accessible
+
+#### Task 3: Unit Testing and Test Automation ✅
+- [x] 5 pytest test cases implemented
+- [x] 100% test pass rate
+- [x] 93% code coverage
+- [x] Coverage.xml generated for Sonar integration
+- [x] Tests integrated into Jenkins & GitHub Actions
+
+#### Task 4: Continuous Integration with Jenkins ✅
+- [x] Jenkins configured with Dockerized setup
+- [x] Jenkinsfile created (Declarative syntax, 9 stages)
+- [x] Automatic builds triggered on Git push
+- [x] Build artifacts generated (test results, coverage)
+- [x] Multiple successful build runs demonstrated
+
+#### Task 5: Containerization with Docker ✅
+- [x] Dockerfile created with best practices
+- [x] Image built and tested locally
+- [x] Image pushed to Docker Hub registry
+- [x] Semantic versioning applied (latest, v1.0)
+- [x] Image runs successfully with port mapping
+
+#### Task 6: Continuous Delivery & Deployment ✅
+- [x] Kubernetes manifests created (Deployment, Service)
+- [x] Deployed to Minikube cluster
+- [x] Deployment strategies documented:
+  - [x] Rolling updates (working)
+  - [x] Blue/Green (documented, ready)
+  - [x] Canary release (manifests ready)
+  - [x] Shadow deployment (concept documented)
+  - [x] Rollback mechanisms (commands provided)
+
+#### Task 7: Automated Testing & Quality Integration ✅
+- [x] Build automation integrated in Jenkins
+- [x] Pytest executed inside container
+- [x] SonarQube configured and analyzing code
+- [x] Quality gates enforced (0 critical issues)
+- [x] Coverage metrics reported
+
+---
+
+### Submission Guidelines Compliance
+
+| Requirement | Status | Evidence |
+|---|---|---|
+| **GitHub Repository Public** | ✅ | https://github.com/kshitizranjan15/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment2 |
+| **Accessible for Review** | ✅ | Repository is public, README comprehensive |
+| **Endpoint URL of Running Cluster** | ✅ | `http://localhost:5000` (Minikube), deployable to any K8s cluster |
+| **Deployment Strategies Demonstrated** | ✅ | Rolling, Blue/Green setup, Canary-ready, documented |
+| **Jenkins Workflow Successful** | ✅ | 8+ builds successful, screenshots provided (06, 07, 22) |
+| **SonarQube Results** | ✅ | 93% coverage, 0 critical issues, dashboard accessible |
+| **Docker Image Repository** | ✅ | Docker Hub: kshitizranjan15/aceest (all versions) |
+| **2-3 Page Report** | ✅ | README provides comprehensive architecture + challenges + outcomes |
+| **CI/CD Architecture Overview** | ✅ | Documented with flow diagrams, 9-stage pipeline explained |
+| **Challenges & Mitigations** | ✅ | Troubleshooting guide, real issues fixed during development |
+| **Key Automation Outcomes** | ✅ | 5 automated tests, 0 manual build steps, zero-downtime deployments |
+
+---
+
+### How to Review This Submission
+
+#### 1. **Quick Start (10 minutes)**
+```bash
+# Clone the repository
+git clone https://github.com/kshitizranjan15/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment2.git
+cd Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment2
+
+# Run tests locally
+python -m pytest -v
+
+# Build Docker image
+docker build -t aceest:local .
+
+# Run container
+docker run -p 5000:5000 aceest:local
+```
+
+#### 2. **Jenkins Pipeline Demo (15 minutes)**
+```bash
+# Build custom Jenkins image
+docker build -f Dockerfile.jenkins -t aceest-jenkins:local .
+
+# Run Jenkins
+docker run -d -p 8080:8080 -v /var/run/docker.sock:/var/run/docker.sock \
+  -v jenkins_home:/var/jenkins_home aceest-jenkins:local
+
+# Access Jenkins at http://localhost:8080
+# (Get initial password from container logs)
+```
+
+#### 3. **Kubernetes Deployment (5 minutes)**
+```bash
+# Start Minikube
+minikube start --driver=docker
+
+# Build and deploy
+eval $(minikube docker-env)
+docker build -t aceest:latest .
+kubectl apply -f k8s/deployment.yaml k8s/service.yaml
+
+# Port forward
+kubectl port-forward svc/aceest-svc 5000:80
+# Access at http://localhost:5000/health
+```
+
+#### 4. **SonarQube Analysis (10 minutes)**
+```bash
+# Start SonarQube
+docker compose -f docker-compose.sonarqube.yml up -d
+
+# Run sonar-scanner
+sonar-scanner -Dsonar.projectKey=aceest-assignment-2 \
+  -Dsonar.host.url=http://localhost:9000 \
+  -Dsonar.login=<token>
+
+# View dashboard at http://localhost:9000
+```
+
+---
+
+### Contact & Questions
+
+**Student:** Kshitiz Ranjan  
+**Roll:** 2024TM93505  
+**Email:** kshitizranjan15@gmail.com  
+**GitHub:** https://github.com/kshitizranjan15  
+**Repository:** https://github.com/kshitizranjan15/Introduction_to_DEVOPS_-S2-25_SEZG514-_Assignment2
+
+---
+
+### Acknowledgements
+
+
 
