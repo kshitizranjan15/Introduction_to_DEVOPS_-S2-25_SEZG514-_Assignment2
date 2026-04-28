@@ -383,10 +383,7 @@ HTML_TEMPLATE = '''
                     <span class="info-icon">🏫</span>
                     <span>SEZG514</span>
                 </div>
-                <div class="info-item">
-                    <span class="info-icon">📅</span>
-                    <span>Semester 2, 2025</span>
-                </div>
+               
             </div>
         </div>
 

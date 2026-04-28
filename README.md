@@ -1,5 +1,7 @@
 # ACEest — Assignment 2: CI/CD, Quality Gates & Kubernetes Delivery
 
+> **🚀 Live Application:** https://kshitizranjan15.pythonanywhere.com/
+
 This repository contains the Assignment‑2 deliverables for the ACEest Fitness & Gym project. It focuses on implementing
 CI/CD best practices, static analysis (SonarQube), container registry integration, and validating deployment manifests on a
 Kubernetes cluster (Minikube / lab cluster). This README is a self-contained runbook for reviewers and graders.
@@ -116,6 +118,20 @@ Expected learning outcomes
 
 Runbook — quick practical steps
 ------------------------------
+
+### **🌐 Live Application URL**
+**Access the live application here:** https://kshitizranjan15.pythonanywhere.com/
+
+The application is deployed on PythonAnywhere and demonstrates:
+- ✅ Web interface with responsive Bootstrap design
+- ✅ RESTful API for workouts, members, and programs
+- ✅ Complete CI/CD pipeline from source to production
+- ✅ All deployment strategies (local Minikube, cloud PythonAnywhere)
+
+---
+
+### Local Testing & Development
+
 This section contains copy‑paste commands to get your demo environment running locally (sonar, minikube, build & deploy).
 
 Prerequisites
@@ -305,6 +321,62 @@ Reviewers will evaluate:
 
 ![Application Running Via Minikube Deployment](images/36_Application_Running%20Via_minikubedeplpyment.png)
 *Figure: Application successfully running and accessible via Minikube deployment*
+
+### Cloud Deployment: PythonAnywhere
+
+![Application Deployed on PythonAnywhere](images/37_Application_Deployed_csp.png)
+*Figure: ACEest Fitness & Gym application successfully deployed on PythonAnywhere cloud platform with live dashboard UI*
+
+#### 🌐 Live Application URL:
+**https://kshitizranjan15.pythonanywhere.com/**
+
+**Access the Running Application:**
+- **Main Application:** https://kshitizranjan15.pythonanywhere.com/
+- **Health Check:** https://kshitizranjan15.pythonanywhere.com/health
+- **API Info:** https://kshitizranjan15.pythonanywhere.com/api/info
+- **Workouts Endpoint:** https://kshitizranjan15.pythonanywhere.com/workouts
+- **Members Endpoint:** https://kshitizranjan15.pythonanywhere.com/members
+- **Programs:** https://kshitizranjan15.pythonanywhere.com/programs
+- **Gym Info:** https://kshitizranjan15.pythonanywhere.com/gym-info
+
+**Deployment Details:**
+- ✅ **Platform:** PythonAnywhere (Cloud Platform)
+- ✅ **Framework:** Flask (Single-file application)
+- ✅ **Python Version:** 3.11
+- ✅ **Status:** Online & Accessible
+- ✅ **HTTPS/SSL:** Enabled
+- ✅ **Domain:** kshitizranjan15.pythonanywhere.com
+- ✅ **Features:** Full UI, API endpoints, calorie calculator, member registration, workout logger
+- ✅ **Architecture:** Responsive Bootstrap 5 UI with left sidebar showing assignment & student info
+
+**Key Features Deployed:**
+- 📊 Training Programs (Fat Loss, Muscle Gain, Beginner)
+- 🔢 Calorie Calculator (FL, MG, BG formula-based)
+- 🏃 Workout Logger (in-memory persistence per session)
+- 👤 Member Registration (email validation)
+- 💪 Gym Metrics Dashboard
+- 🎨 Professional Bootstrap UI with animated cards
+- 📱 Responsive design (mobile-friendly)
+- 🛡️ HTTPS security enabled
+- 📡 RESTful API endpoints
+
+**Student Information Sidebar:**
+- Student Name: Kshitiz Ranjan
+- Roll Number: 2024TM93505
+- Course: Introduction to DevOps (SEZG514)
+- Semester: 2, 2025
+- Assignment: 2 (CI/CD, Quality Gates, Kubernetes)
+
+The application has been deployed to PythonAnywhere for live web hosting. This demonstrates deploying the same containerized application to a cloud platform without Kubernetes. Features include:
+
+- ✅ **Live Web Interface:** Accessible at https://kshitizranjan15.pythonanywhere.com/
+- ✅ **RESTful API Endpoints:** All endpoints functional (health checks, member registration, workout logging, program selection)
+- ✅ **Responsive Design:** Bootstrap UI with sidebar showing assignment and student information
+- ✅ **Single-File Deployment:** Python application (pythonanywhere_app.py) serves all endpoints without external file dependencies
+- ✅ **In-Memory Data Store:** Rapid deployment without database setup requirements
+- ✅ **WSGI Configuration:** Fully configured for PythonAnywhere's application server
+
+**Deployment Method:** Single-file Flask application (pythonanywhere_app.py) with embedded HTML templates and WSGI application entry point.
 
 ---
 
@@ -1422,7 +1494,7 @@ This project demonstrates DevOps best practices including:
 **Student Name:** Kshitiz Ranjan  
 **Roll Number:** 2024TM93505  
 **Institution:** BITS Pilani, Work Integrated Learning Programme (WILP)  
-**Submission Date:** April 26, 2026
+**Submission Date:** April 28, 2026
 
 ---
 
